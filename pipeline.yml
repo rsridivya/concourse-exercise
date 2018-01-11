@@ -12,11 +12,11 @@ resources:
     uri: https://github.com/rsridivya/gannet_exercise.git
 
 jobs:
-- name: Run-automatically
+- name: Build Web App/ Run Tests
   plan:
   - get: my-resource
     trigger: true
-  - task: do-your-task-here
+  - task: build-test
     config:
       platform: linux
       image_resource:
