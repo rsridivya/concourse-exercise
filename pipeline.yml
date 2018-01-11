@@ -1,0 +1,79 @@
+---
+resources:
+- name: my-resource
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/rsridivya/helloworld.git
+- name: my-docker-resource
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/rsridivya/gannet_exercise.git
+
+jobs:
+- name: Run-automatically
+  plan:
+  - get: my-resource
+    trigger: true
+  - task: do-your-task-here
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: centos
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          yum install git wget -y 
+          git clone https://github.com/rsridivya/helloworld.git
+          wget https://dl.google.com/go/go1.9.2.linux-amd64.tar.gz
+          tar xzf go*
+          mv go /opt
+          export PATH=$PATH:/opt
+          cd helloworld/src/hello
+          /opt/go/bin/go build hello.go
+          /opt/go/bin/go test -cover
+
+- name: web-app-gannet
+  plan:
+  - get: my-docker-resource
+    trigger: true
+  - task: run-web-app
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: amidos/dcind}
+      run:
+        path: /bin/sh
+        args:
+        - -xec
+        - |
+          source /docker-lib.sh
+          start_docker
+          curl -L https://raw.githubusercontent.com/aelsabbahy/goss/master/extras/dgoss/dgoss -o /usr/local/bin/dgoss
+          chmod +rx /usr/local/bin/dgoss
+          mkdir ~/Downloads
+          curl -L https://github.com/aelsabbahy/goss/releases/download/v0.3.5/goss-linux-amd64 -o ~/Downloads/goss-linux-amd64
+          export GOSS_PATH=~/Downloads/goss-linux-amd64
+          echo "              port:
+                                    tcp:8090:
+                                    listening: false
+                                    ip: []
+                              process:
+                                    hello:
+                                    running: true
+                              http:
+                                    http://localhost:8090:
+                                    status: 200
+                                    allow-insecure: false
+                                    no-follow-redirects: false
+                                    timeout: 5000
+                                    body: []" > goss.yaml
+          cat goss.yaml
+          sh /usr/local/bin/dgoss edit -p 8090:8090 "rsridivya/gannet_exercise" hello
