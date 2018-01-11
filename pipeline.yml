@@ -76,4 +76,4 @@ jobs:
                                     timeout: 5000
                                     body: []" > goss.yaml
           cat goss.yaml
-          sh /usr/local/bin/dgoss edit -p 8090:8090 "rsridivya/gannet_exercise" hello
+          sh /usr/local/bin/dgoss run -p 8090:8090 "rsridivya/gannet_exercise" hello
