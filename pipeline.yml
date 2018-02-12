@@ -39,7 +39,7 @@ jobs:
           /opt/go/bin/go build hello.go
           /opt/go/bin/go test -cover
           
-- name: web-app-gannet
+- name: web-app-gannett
   plan:
   - get: my-docker-resource
     trigger: true
